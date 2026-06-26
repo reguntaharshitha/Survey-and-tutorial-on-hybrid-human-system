@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                    Critical Notices & Alerts
+                </h4>
+                <span class="badge bg-danger">{{ notices.count }} active notices</span>
+            </div>
+            <div class="card-body">
+                {% if notices %}
+                <div class="row">
+                    {% for notice in notices %}
+                    <div class="col-12 mb-4">
+                        <div class="card border-{% if notice.priority == 'critical' %}danger{% elif notice.priority == 'high' %}warning{% else %}info{% endif %}">
+                            <div class="card-header bg-{% if notice.priority == 'critical' %}danger{% elif notice.priority == 'high' %}warning{% else %}info{% endif %} text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-{% if notice.priority == 'critical' %}exclamation-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+                                    {{ notice.notice_type }}
+                                </h5>
+                                <span class="badge bg-light text-dark">{{ notice.get_priority_display }} Priority</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <p class="lead">{{ notice.message }}</p>
+                                        
+                                        {% if notice.suggested_actions %}
+                                        <div class="mt-4">
+                                            <h6>Suggested Actions:</h6>
+                                            <div class="list-group">
+                                                {% for action in notice.suggested_actions %}
+                                                <div class="list-group-item">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-check-circle text-success me-3"></i>
+                                                        <span>{{ action }}</span>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h6>Report Details</h6>
+                                                <p class="mb-2">
+                                                    <strong>Report:</strong> {{ notice.report.title }}
+                                                </p>
+                                                <p class="mb-2">
+                                                    <strong>Generated:</strong> {{ notice.report.created_at|date:"M j, Y" }}
+                                                </p>
+                                                <p class="mb-0">
+                                                    <strong>Confidence:</strong> 
+                                                    <span class="badge bg-{% if notice.report.confidence_scores.overall > 0.8 %}success{% elif notice.report.confidence_scores.overall > 0.6 %}warning{% else %}danger{% endif %}">
+                                                        {{ notice.report.confidence_scores.overall|floatformat:2 }}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2 mt-3">
+                                            <a href="{% url 'report_detail' notice.report.id %}" class="btn btn-primary">
+                                                View Full Report
+                                            </a>
+                                            <button class="btn btn-outline-secondary mark-resolved-btn" data-notice-id="{{ notice.id }}">
+                                                Mark as Reviewed
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted">
+                                Created: {{ notice.created_at|date:"F j, Y \a\t H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5>No Critical Notices</h5>
+                    <p class="text-muted">All systems are operating normally. No critical alerts at this time.</p>
+                    <a href="{% url 'report_dashboard' %}" class="btn btn-primary">
+                        <i class="fas fa-chart-bar me-2"></i>View Reports Dashboard
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('.mark-resolved-btn').on('click', function() {
+        const noticeId = $(this).data('notice-id');
+        const button = $(this);
+        
+        $.ajax({
+            url: '/api/mark-notice-reviewed/', // You'll need to create this API endpoint
+            type: 'POST',
+            data: {
+                'notice_id': noticeId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    button.closest('.col-12').fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

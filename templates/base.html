@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIS - Human AI Interaction System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-text: #2c3e50;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--secondary-color) !important;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+        }
+        
+        .sidebar {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .trust-indicator {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71);
+        }
+
+        /* Progress bar enhancements */
+        .progress {
+            height: 8px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: width 0.3s ease-in-out;
+        }
+
+        .progress-bar.bg-success {
+            background: linear-gradient(90deg, #f39c12, #27ae60) !important;
+        }
+
+        .progress-bar.bg-info {
+            background: linear-gradient(90deg, #e74c3c, #3498db) !important;
+        }
+
+        .progress-bar.bg-warning {
+            background: linear-gradient(90deg, #f39c12, #e67e22) !important;
+        }
+
+        .progress-bar.bg-danger {
+            background: linear-gradient(90deg, #e74c3c, #c0392b) !important;
+        }
+
+        .min-vh-80 {
+            min-height: 80vh;
+        }
+
+        .hero-content {
+            padding: 2rem 0;
+        }
+
+        /* Additional Custom Styles */
+        .star-rating {
+            color: #ffc107;
+        }
+
+        .range-slider .form-range {
+            height: 8px;
+        }
+
+        .range-slider .d-flex small {
+            font-size: 0.7rem;
+            color: #6c757d;
+        }
+
+        /* Table styles */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        /* Modal enhancements */
+        .modal-content {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* Button enhancements */
+        .btn {
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Navigation enhancements */
+        .nav-link {
+            font-weight: 500;
+        }
+
+        /* Alert enhancements */
+        .alert {
+            border: none;
+            border-radius: 10px;
+        }
+
+        /* Form enhancements */
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        main {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Navigation -->
+
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary-color);">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-robot"></i> HAIS
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'interaction_home' %}">Interact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'report_dashboard' %}">Reports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'trust_dashboard' %}">Trust & Ethics</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'recommendations_dashboard' %}">Recommendations</a>
+                    </li>
+                    {% if user.role == 'admin' or user.role == 'moderator' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin_dashboard' %}">Admin</a>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                <i class="fas fa-user-circle me-2"></i>Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'feedback_history' %}">
+                                <i class="fas fa-comments me-2"></i>Feedback History
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a href="{% url 'logout' %}" class="btn btn-danger">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas 
+                    {% if message.tags == 'success' %}fa-check-circle
+                    {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}fa-times-circle
+                    {% else %}fa-info-circle{% endif %} 
+                    me-2"></i>
+                <div>{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>HAIS</h5>
+                    <p class="mb-0">Human AI Interaction System</p>
+                    <small class="text-muted">Empowering decisions through ethical AI collaboration</small>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="mb-2">
+                        <a href="#" class="text-light me-3"><i class="fab fa-github"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-light"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                    <small>&copy; 2024 Human AI Interaction System. All rights reserved.</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block scripts %}
+    {% endblock %}
+
+    <script>
+    // Global JavaScript functions
+    function showNotification(message, type = 'info') {
+        const alertClass = type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 
+                          type === 'error' ? 'alert-danger' : 'alert-info';
+        
+        const alert = $(`<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`);
+        
+        $('.container.mt-3').append(alert);
+        
+        setTimeout(() => {
+            alert.alert('close');
+        }, 5000);
+    }
+
+    // Auto-hide alerts after 5 seconds
+    $(document).ready(function() {
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+    });
+    </script>
+</body>
+</html>

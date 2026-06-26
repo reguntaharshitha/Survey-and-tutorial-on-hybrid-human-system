@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-shield-alt text-danger me-2"></i>Admin Portal Dashboard
+                    </h1>
+                    <p class="text-muted mt-2">
+                        <i class="fas fa-user me-1"></i>Logged in as: <strong>{{ request.user.username }}</strong> (ID: {{ request.user.id }})
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_logout' %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>Admin Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Total Users</h6>
+                            <h3 class="mb-0 text-primary">{{ total_users }}</h3>
+                        </div>
+                        <i class="fas fa-users fa-3x text-primary opacity-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Active Sessions</h6>
+                            <h3 class="mb-0 text-success">{{ active_sessions }}</h3>
+                        </div>
+                        <i class="fas fa-comments fa-3x text-success opacity-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Admin Logins (Today)</h6>
+                            <h3 class="mb-0 text-warning">{{ today_logins }}</h3>
+                        </div>
+                        <i class="fas fa-sign-in-alt fa-3x text-warning opacity-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Admin Operations</h6>
+                            <h3 class="mb-0 text-info">{{ today_operations }}</h3>
+                        </div>
+                        <i class="fas fa-cog fa-3x text-info opacity-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status Row -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Recent Registrations</h6>
+                            <h3 class="mb-0 text-danger">{{ recent_registrations }}</h3>
+                            <small class="text-muted">Last 24 hours</small>
+                        </div>
+                        <i class="fas fa-user-plus fa-3x text-danger opacity-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Active Users (24h)</h6>
+                            <h3 class="mb-0 text-dark">{{ recent_users_active }}</h3>
+                        </div>
+                        <i class="fas fa-user-clock fa-3x text-dark opacity-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-secondary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Total Feedback</h6>
+                            <h3 class="mb-0 text-secondary">{{ total_feedback }}</h3>
+                        </div>
+                        <i class="fas fa-comment-dots fa-3x text-secondary opacity-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted text-uppercase mb-1">Processed Feedback</h6>
+                            <h3 class="mb-0 text-success">{{ processed_feedback }}</h3>
+                        </div>
+                        <i class="fas fa-check-circle fa-3x text-success opacity-5"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Operations & Recent Activity -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2 text-primary"></i>Recent Admin Operations (Today)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if admin_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Admin</th>
+                                    <th>Action</th>
+                                    <th>Resource</th>
+                                    <th>IP Address</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in admin_logs %}
+                                <tr>
+                                    <td>
+                                        <small class="text-muted">{{ log.timestamp|date:"H:i:s" }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ log.user.username }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if log.action == 'login' %}success{% elif log.action == 'delete' %}danger{% elif log.action == 'create' %}info{% else %}warning{% endif %}">
+                                            {{ log.get_action_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <code class="text-danger">{{ log.resource }}</code>
+                                    </td>
+                                    <td>
+                                        <small>{{ log.ip_address }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ log.details|truncatewords:5 }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info m-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>No admin operations today
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Sidebar -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'user_management' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2 text-primary"></i>
+                        User Management
+                        <i class="fas fa-chevron-right float-end mt-1"></i>
+                    </a>
+                    <a href="{% url 'feedback_review' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-comments me-2 text-info"></i>
+                        Review Feedback
+                        <i class="fas fa-chevron-right float-end mt-1"></i>
+                    </a>
+                    <a href="{% url 'security_logs' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shield-alt me-2 text-danger"></i>
+                        Security Logs
+                        <i class="fas fa-chevron-right float-end mt-1"></i>
+                    </a>
+                    <a href="{% url 'ai_configuration' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-cog me-2 text-secondary"></i>
+                        AI Configuration
+                        <i class="fas fa-chevron-right float-end mt-1"></i>
+                    </a>
+                    <a href="{% url 'analytics_dashboard' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-bar me-2 text-success"></i>
+                        Analytics & Reports
+                        <i class="fas fa-chevron-right float-end mt-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent System Activity -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-server me-2 text-info"></i>System Activity Log
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Resource</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td><small>{{ log.timestamp|date:"M d H:i:s" }}</small></td>
+                                    <td>{{ log.user.username|default:"System" }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ log.get_action_display }}</span>
+                                    </td>
+                                    <td><code>{{ log.resource }}</code></td>
+                                    <td><small class="text-muted">{{ log.details|truncatewords:3 }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info m-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>No recent system activity
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-primary {
+        border-left: 4px solid #007bff !important;
+    }
+    
+    .border-left-success {
+        border-left: 4px solid #28a745 !important;
+    }
+    
+    .border-left-warning {
+        border-left: 4px solid #ffc107 !important;
+    }
+    
+    .border-left-info {
+        border-left: 4px solid #17a2b8 !important;
+    }
+    
+    .border-left-danger {
+        border-left: 4px solid #dc3545 !important;
+    }
+    
+    .border-left-secondary {
+        border-left: 4px solid #6c757d !important;
+    }
+    
+    .border-left-dark {
+        border-left: 4px solid #343a40 !important;
+    }
+    
+    .card {
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+        border: none;
+    }
+    
+    .list-group-item {
+        padding: 1rem;
+        border: none;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+    
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

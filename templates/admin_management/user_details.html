@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">User Details</h4>
+                <a href="{% url 'user_management' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Users
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- User Profile Card -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Profile Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="text-muted">Username</label>
+                                        <p class="mb-0"><strong>{{ user.username }}</strong></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-muted">Email</label>
+                                        <p class="mb-0"><strong>{{ user.email }}</strong></p>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="text-muted">Role</label>
+                                        <p class="mb-0">
+                                            <span class="badge bg-{% if user.role == 'admin' %}danger{% elif user.role == 'moderator' %}warning{% else %}primary{% endif %}">
+                                                {{ user.get_role_display|default:user.role }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-muted">Status</label>
+                                        <p class="mb-0">
+                                            <span class="badge bg-{% if user.is_active %}success{% else %}danger{% endif %}">
+                                                {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="text-muted">Date Joined</label>
+                                        <p class="mb-0"><strong>{{ user.date_joined|date:"M j, Y H:i" }}</strong></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-muted">Trust Score</label>
+                                        <p class="mb-0">
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                    <div class="progress-bar bg-{% if user.trust_score > 0.7 %}success{% elif user.trust_score > 0.4 %}warning{% else %}danger{% endif %}" 
+                                                         style="width: {% widthratio user.trust_score 1 100 %}%">
+                                                    </div>
+                                                </div>
+                                                <small>{{ user.trust_score|floatformat:2 }}</small>
+                                            </div>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Avatar -->
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="img-fluid rounded mb-3" style="max-height: 200px;">
+                                {% else %}
+                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                                    <i class="fas fa-user text-light" style="font-size: 60px;"></i>
+                                </div>
+                                {% endif %}
+                                <h5>{{ user.username }}</h5>
+                                {% if user.userprofile.bio %}
+                                <p class="text-muted mb-0">{{ user.userprofile.bio }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Feedback -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">User Feedback ({{ user_feedback.count }})</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if user_feedback %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Rating</th>
+                                        <th>Comment</th>
+                                        <th>Timestamp</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for feedback in user_feedback %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-{% if feedback.feedback_type == 'agreement' %}success{% elif feedback.feedback_type == 'correction' %}warning{% else %}info{% endif %}">
+                                                {{ feedback.get_feedback_type_display|default:feedback.feedback_type }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if feedback.rating %}
+                                            {% for i in "12345" %}
+                                            <i class="fas fa-star{% if forloop.counter > feedback.rating %}-o{% endif %} text-warning"></i>
+                                            {% endfor %}
+                                            {% else %}
+                                            <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if feedback.comment %}
+                                            <small>{{ feedback.comment|truncatewords:10 }}</small>
+                                            {% else %}
+                                            <span class="text-muted">—</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small>{{ feedback.timestamp|date:"M j, H:i" }}</small></td>
+                                        <td>
+                                            <span class="badge bg-{% if feedback.is_processed %}success{% else %}warning{% endif %}">
+                                                {% if feedback.is_processed %}Processed{% else %}Pending{% endif %}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0">No feedback from this user.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Interaction Sessions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Interaction Sessions ({{ user_sessions.count }})</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if user_sessions %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Session ID</th>
+                                        <th>Started</th>
+                                        <th>Ended</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in user_sessions %}
+                                    <tr>
+                                        <td><code>{{ session.session_id }}</code></td>
+                                        <td><small>{{ session.start_time|date:"M j, H:i" }}</small></td>
+                                        <td>
+                                            {% if session.end_time %}
+                                            <small>{{ session.end_time|date:"M j, H:i" }}</small>
+                                            {% else %}
+                                            <span class="text-muted">Active</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if session.end_time %}
+                                            <small>{{ session.end_time|timesince:session.start_time }}</small>
+                                            {% else %}
+                                            <span class="text-muted">—</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0">No interaction sessions found.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

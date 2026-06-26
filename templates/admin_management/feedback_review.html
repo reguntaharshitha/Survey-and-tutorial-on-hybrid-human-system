@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">User Feedback Review</h4>
+                <span class="badge bg-primary">{{ feedbacks.count }} total feedback</span>
+            </div>
+            <div class="card-body">
+                <!-- Filters -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <select class="form-select" id="type-filter">
+                            <option value="">All Types</option>
+                            <option value="agreement">Agreement</option>
+                            <option value="correction">Correction</option>
+                            <option value="emotional">Emotional</option>
+                            <option value="rational">Rational</option>
+                            <option value="suggestion">Suggestion</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="rating-filter">
+                            <option value="">All Ratings</option>
+                            <option value="1">1 Star</option>
+                            <option value="2">2 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="5">5 Stars</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="status-filter">
+                            <option value="">All Status</option>
+                            <option value="processed">Processed</option>
+                            <option value="unprocessed">Unprocessed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary w-100" id="reset-filters">
+                            <i class="fas fa-refresh me-1"></i>Reset
+                        </button>
+                    </div>
+                </div>
+                
+                {% if feedbacks %}
+                <div class="table-responsive">
+                    <table class="table table-hover" id="feedback-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Rating</th>
+                                <th>Feedback</th>
+                                <th>AI Response</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feedback in feedbacks %}
+                            <tr data-feedback-id="{{ feedback.id }}" data-type="{{ feedback.feedback_type }}" 
+                                data-rating="{{ feedback.rating|default:0 }}"
+                                data-status="{% if feedback.is_processed %}processed{% else %}unprocessed{% endif %}">
+                                <td>
+                                    <strong>{{ feedback.user.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ feedback.user.email }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if feedback.feedback_type == 'agreement' %}success{% elif feedback.feedback_type == 'correction' %}warning{% else %}info{% endif %}">
+                                        {{ feedback.get_feedback_type_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if feedback.rating %}
+                                    <div class="star-rating">
+                                        {% for i in "12345" %}
+                                        <i class="fas fa-star{% if forloop.counter > feedback.rating %}-o{% endif %} text-warning"></i>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if feedback.comment %}
+                                    <p class="mb-1">{{ feedback.comment|truncatewords:10 }}</p>
+                                    {% endif %}
+                                    {% if feedback.emotional_response %}
+                                    <small class="text-muted">Emotion: {{ feedback.emotional_response }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ feedback.ai_response.response_data|truncatewords:8 }}</small>
+                                </td>
+                                <td>
+                                    {% if feedback.is_processed %}
+                                    <span class="badge bg-success status-badge">Processed</span>
+                                    {% else %}
+                                    <span class="badge bg-warning status-badge">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ feedback.timestamp|date:"M j, Y" }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ feedback.timestamp|date:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        
+                                        {% if not feedback.is_processed %}
+                                        <button class="btn btn-outline-success process-feedback-btn" data-feedback-id="{{ feedback.id }}">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {% endif %}
+                                        <button class="btn btn-outline-danger delete-feedback-btn" data-feedback-id="{{ feedback.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Feedback navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <h5>No Feedback Available</h5>
+                    <p class="text-muted">User feedback will appear here as users interact with the system.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Feedback Statistics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Feedback Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-2">
+                        <div id="metric-total" class="metric-value text-primary">{{ total_feedback }}</div>
+                        <div class="text-muted">Total</div>
+                    </div>
+                    <div class="col-md-2">
+                        <div id="metric-processed" class="metric-value text-success">{{ processed_feedback_count }}</div>
+                        <div class="text-muted">Processed</div>
+                    </div>
+                    <div class="col-md-2">
+                        <div id="metric-pending" class="metric-value text-warning">{{ pending_feedback_count }}</div>
+                        <div class="text-muted">Pending</div>
+                    </div>
+                    <div class="col-md-2">
+                        <div id="metric-agreements" class="metric-value text-info">{{ agreement_count }}</div>
+                        <div class="text-muted">Agreements</div>
+                    </div>
+                    <div class="col-md-2">
+                        <div id="metric-corrections" class="metric-value text-danger">{{ correction_count }}</div>
+                        <div class="text-muted">Corrections</div>
+                    </div>
+                    <div class="col-md-2">
+                        <div id="metric-avg-rating" class="metric-value" style="color: #6f42c1;">
+                            <b>{{ avg_feedback_rating|floatformat:1 }}</b>
+                        </div>
+                        <div class="text-muted">Avg Rating</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Detail Modal -->
+<div class="modal fade" id="feedbackDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Feedback Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="feedback-detail-content">
+                <!-- Content will be loaded via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Filter functionality
+    $('#type-filter, #rating-filter, #status-filter').on('change', filterFeedback);
+    $('#reset-filters').on('click', function() {
+        $('#type-filter, #rating-filter, #status-filter').val('');
+        filterFeedback();
+    });
+    
+    function filterFeedback() {
+        const typeFilter = $('#type-filter').val();
+        const ratingFilter = $('#rating-filter').val();
+        const statusFilter = $('#status-filter').val();
+        
+        $('#feedback-table tbody tr').each(function() {
+            const row = $(this);
+            const rowType = row.data('type');
+            const rowRating = row.data('rating').toString();
+            const rowStatus = row.data('status');
+            
+            let showRow = true;
+            
+            if (typeFilter && rowType !== typeFilter) {
+                showRow = false;
+            }
+            
+            if (ratingFilter && rowRating !== ratingFilter) {
+                showRow = false;
+            }
+            
+            if (statusFilter && rowStatus !== statusFilter) {
+                showRow = false;
+            }
+            
+            if (showRow) {
+                row.show();
+            } else {
+                row.hide();
+            }
+        });
+    }
+    
+    // View feedback details (delegated)
+    $('#feedback-table').on('click', '.view-feedback-btn', function() {
+        const feedbackId = $(this).data('feedback-id');
+
+        $.ajax({
+            url: '/api/admin/feedback/' + feedbackId + '/',
+            type: 'GET',
+            success: function(response) {
+                $('#feedback-detail-content').html(response.html);
+                $('#feedbackDetailModal').modal('show');
+            }
+        });
+    });
+
+    // Helper to update the metrics in DOM
+    function adjustMetric(id, delta) {
+        const el = $('#' + id);
+        if (!el.length) return;
+        const cur = parseInt(el.text()) || 0;
+        el.text(cur + delta);
+    }
+
+    // Process feedback (delegated)
+    $('#feedback-table').on('click', '.process-feedback-btn', function() {
+        const button = $(this);
+        const feedbackId = button.data('feedback-id');
+        const row = button.closest('tr');
+        const prevStatus = row.attr('data-status');
+
+        $.ajax({
+            url: '{% url "feedback_review" %}',
+            type: 'POST',
+            data: {
+                'feedback_id': feedbackId,
+                'action': 'process',
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // update the row's data-status so filters reflect change
+                    row.attr('data-status', 'processed');
+                    // update the visible status badge specifically
+                    row.find('.status-badge').removeClass('bg-warning').addClass('bg-success').text('Processed');
+                    // remove the process button
+                    button.remove();
+                    // adjust metrics: pending -> processed
+                    if (prevStatus !== 'processed') {
+                        adjustMetric('metric-pending', -1);
+                        adjustMetric('metric-processed', 1);
+                    }
+                }
+            }
+        });
+    });
+
+    // Delete feedback (delegated)
+    $('#feedback-table').on('click', '.delete-feedback-btn', function() {
+        const button = $(this);
+        const feedbackId = button.data('feedback-id');
+        const row = button.closest('tr');
+        const rowStatus = row.attr('data-status');
+
+        if (confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) {
+            $.ajax({
+                url: '{% url "feedback_review" %}',
+                type: 'POST',
+                data: {
+                    'feedback_id': feedbackId,
+                    'action': 'delete',
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        row.fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                        // adjust metrics
+                        adjustMetric('metric-total', -1);
+                        if (rowStatus === 'processed') {
+                            adjustMetric('metric-processed', -1);
+                        } else {
+                            adjustMetric('metric-pending', -1);
+                        }
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

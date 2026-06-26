@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0">
+                    <i class="fas fa-users me-2 text-primary"></i>User Management
+                </h1>
+                <a href="{% url 'admin_portal_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="alert-container mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>All Users ({{ users.count }})
+                    </h5>
+                </div>
+                <div class="col text-end">
+                    <input type="search" id="userSearch" class="form-control form-control-sm" placeholder="Search users..." style="max-width: 200px; display: inline-block;">
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if users %}
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0" id="usersTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Staff</th>
+                            <th>Superuser</th>
+                            <th>Joined</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <strong>{{ user.username }}</strong>
+                                {% if user.is_superuser %}
+                                <span class="badge bg-danger ms-2">Superuser</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>{{ user.email }}</small>
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_staff %}
+                                <i class="fas fa-check text-success"></i>
+                                {% else %}
+                                <i class="fas fa-times text-secondary"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_superuser %}
+                                <i class="fas fa-check text-danger"></i>
+                                {% else %}
+                                <i class="fas fa-times text-secondary"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ user.date_joined|date:"M d, Y" }}</small>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {% if user.last_login %}
+                                        {{ user.last_login|date:"M d H:i" }}
+                                    {% else %}
+                                        Never
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'user_details' user.id %}" class="btn btn-info" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        
+                                        {% if user.is_active %}
+                                        <button type="submit" name="action" value="deactivate" class="btn btn-warning" title="Deactivate" onclick="return confirm('Deactivate {{ user.username }}?');">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                        {% else %}
+                                        <button type="submit" name="action" value="activate" class="btn btn-success" title="Activate" onclick="return confirm('Activate {{ user.username }}?');">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {% endif %}
+                                    </form>
+                                    
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        
+                                        {% if user.is_staff %}
+                                        <button type="submit" name="action" value="revoke_staff" class="btn btn-secondary" title="Revoke Staff" onclick="return confirm('Remove staff privileges from {{ user.username }}?');">
+                                            <i class="fas fa-user-clock"></i>
+                                        </button>
+                                        {% else %}
+                                        <button type="submit" name="action" value="grant_staff" class="btn btn-secondary" title="Grant Staff" onclick="return confirm('Grant staff privileges to {{ user.username }}?');">
+                                            <i class="fas fa-user-tie"></i>
+                                        </button>
+                                        {% endif %}
+                                    </form>
+                                    
+                                    {% if not user.is_superuser %}
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        <button type="submit" name="action" value="delete" class="btn btn-danger" title="Delete" onclick="return confirm('Permanently delete {{ user.username }} and all associated data? This cannot be undone!');">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info m-3 mb-0">
+                <i class="fas fa-info-circle me-2"></i>No users found
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<script>
+    // Search functionality
+    document.getElementById('userSearch').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('#usersTable tbody tr');
+        
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

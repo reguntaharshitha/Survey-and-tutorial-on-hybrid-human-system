@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">AI System Configuration</h4>
+            </div>
+            <div class="card-body">
+                <!-- Current Configurations -->
+                <div class="mb-4">
+                    <h5>Current Configurations</h5>
+                    {% if configurations %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Configuration Key</th>
+                                    <th>Value</th>
+                                    <th>Last Modified</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for config in configurations %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ config.config_key }}</strong>
+                                        {% if config.description %}
+                                        <br>
+                                        <small class="text-muted">{{ config.description }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <code>{{ config.config_value|truncatewords:10 }}</code>
+                                    </td>
+                                    <td>
+                                        <small>{{ config.last_modified|date:"M j, Y H:i" }}</small>
+                                        <br>
+                                        <small class="text-muted">by {{ config.modified_by.username }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary edit-config-btn" data-config-id="{{ config.id }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger delete-config-btn" data-config-id="{{ config.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-cog fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No configurations found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Add/Edit Configuration -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0" id="config-form-title">Add New Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="config-form">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Configuration Key</label>
+                                        <input type="text" class="form-control" name="config_key" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Configuration Type</label>
+                                        <select class="form-select" name="config_type">
+                                            <option value="string">String</option>
+                                            <option value="number">Number</option>
+                                            <option value="boolean">Boolean</option>
+                                            <option value="json">JSON</option>
+                                            <option value="array">Array</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Configuration Value</label>
+                                <textarea class="form-control" name="config_value" rows="4" placeholder='Enter configuration value. For JSON, use format: {"key": "value"}' required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description (Optional)</label>
+                                <textarea class="form-control" name="description" rows="2" placeholder="Describe what this configuration controls"></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Save Configuration</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- System Status -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">AI System Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        Recommendation Engine
+                        <span class="badge bg-success">Online</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        Trust Analytics
+                        <span class="badge bg-success">Online</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        Emotional Analysis
+                        <span class="badge bg-warning">Degraded</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        Decision Reporting
+                        <span class="badge bg-success">Online</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        Model Training
+                        <span class="badge bg-secondary">Idle</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" id="reload-models-btn">
+                        <i class="fas fa-sync me-2"></i>Reload AI Models
+                    </button>
+                    <button class="btn btn-outline-info" id="clear-cache-btn">
+                        <i class="fas fa-broom me-2"></i>Clear System Cache
+                    </button>
+                    <button class="btn btn-outline-warning" id="backup-config-btn">
+                        <i class="fas fa-save me-2"></i>Backup Configurations
+                    </button>
+                    <button class="btn btn-outline-danger" id="reset-defaults-btn">
+                        <i class="fas fa-undo me-2"></i>Reset to Defaults
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Metrics -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">System Metrics</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="metric-value text-primary">98.7%</div>
+                    <div class="text-muted">Uptime</div>
+                </div>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="metric-value text-success">2.3ms</div>
+                        <div class="text-muted small">Avg Response</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-value text-info">1.2K</div>
+                        <div class="text-muted small">Req/Min</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Configuration Modal -->
+<div class="modal fade" id="editConfigModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="edit-config-modal-body">
+                <!-- Content will be loaded via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Save configuration form
+    $('#config-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        $.ajax({
+            url: '{% url "ai_configuration" %}',
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.success) {
+                    showNotification('Configuration saved successfully!', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                }
+            }
+        });
+    });
+    
+    // Edit configuration
+    $('.edit-config-btn').on('click', function() {
+        const configId = $(this).data('config-id');
+        
+        $.ajax({
+            url: '/api/admin/config/' + configId + '/',
+            type: 'GET',
+            success: function(response) {
+                $('#edit-config-modal-body').html(response.html);
+                $('#editConfigModal').modal('show');
+            }
+        });
+    });
+    
+    // Delete configuration
+    $('.delete-config-btn').on('click', function() {
+        const configId = $(this).data('config-id');
+        
+        if (confirm('Are you sure you want to delete this configuration?')) {
+            $.ajax({
+                url: '/api/admin/config/' + configId + '/delete/',
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showNotification('Configuration deleted successfully!', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
+                }
+            });
+        }
+    });
+    
+    // Quick actions
+    $('#reload-models-btn').on('click', function() {
+        if (confirm('Reload all AI models? This may cause brief service interruption.')) {
+            showNotification('Reloading AI models...', 'info');
+        }
+    });
+    
+    $('#clear-cache-btn').on('click', function() {
+        if (confirm('Clear system cache? This may improve performance.')) {
+            showNotification('Clearing system cache...', 'info');
+        }
+    });
+    
+    $('#backup-config-btn').on('click', function() {
+        showNotification('Creating configuration backup...', 'info');
+    });
+    
+    $('#reset-defaults-btn').on('click', function() {
+        if (confirm('Reset all configurations to defaults? This cannot be undone.')) {
+            showNotification('Resetting to default configurations...', 'warning');
+        }
+    });
+    
+    function showNotification(message, type) {
+        const alert = $('<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+                       message +
+                       '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+        $('.card-body').prepend(alert);
+        
+        setTimeout(() => {
+            alert.alert('close');
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

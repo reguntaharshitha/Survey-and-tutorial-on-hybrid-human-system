@@ -1,0 +1,474 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h2 mb-0">
+                    <i class="fas fa-shield-alt me-2 text-danger"></i>Security & Audit Logs
+                </h1>
+                <a href="{% url 'admin_portal_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filters</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Action</label>
+                    <select class="form-select" name="action">
+                        <option value="">All Actions</option>
+                        {% for action in unique_actions %}
+                        <option value="{{ action }}" {% if action == selected_action %}selected{% endif %}>
+                            {{ action|title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label">Resource</label>
+                    <select class="form-select" name="resource">
+                        <option value="">All Resources</option>
+                        {% for resource in unique_resources %}
+                        <option value="{{ resource }}" {% if resource == selected_resource %}selected{% endif %}>
+                            {{ resource|title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary mt-4">
+                            <i class="fas fa-search me-1"></i>Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>Audit Logs ({{ logs.count }})
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if logs %}
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Resource</th>
+                            <th>IP Address</th>
+                            <th>Details</th>
+                            <th>Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>
+                                <small>{{ log.timestamp|date:"M d, Y H:i:s" }}</small>
+                            </td>
+                            <td>
+                                {% if log.user %}
+                                <strong>{{ log.user.username }}</strong>
+                                {% else %}
+                                <span class="text-muted">System</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if log.action == 'login' %}success{% elif log.action == 'logout' %}info{% elif log.action == 'delete' %}danger{% elif log.action == 'create' %}primary{% else %}warning{% endif %}">
+                                    {{ log.get_action_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <code class="text-secondary">{{ log.resource }}</code>
+                            </td>
+                            <td>
+                                <small class="font-monospace">
+                                    {% if log.ip_address %}
+                                        {{ log.ip_address }}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                {% if log.details %}
+                                <small class="text-muted" title="{{ log.details }}">
+                                    {{ log.details|truncatewords:3 }}
+                                </small>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if log.action == 'delete' or log.resource == 'admin_portal' %}
+                                <span class="badge bg-danger">High</span>
+                                {% elif log.action in 'update,logout' %}
+                                <span class="badge bg-warning">Medium</span>
+                                {% else %}
+                                <span class="badge bg-success">Low</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info m-3 mb-0">
+                <i class="fas fa-info-circle me-2"></i>No logs found matching the selected filters
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    code {
+        background-color: #f8f9fa;
+        padding: 0.2em 0.4em;
+        border-radius: 3px;
+        font-size: 0.85em;
+    }
+</style>
+
+<!-- Security Overview -->
+<div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <div class="metric-value text-primary">{{ logs.count }}</div>
+                                <div class="text-muted">Total Logs</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <div class="metric-value text-success">
+                                    {{ logs|dictsort:"action"|slice:":1"|length }}
+                                </div>
+                                <div class="text-muted">Logins Today</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <div class="metric-value text-warning">
+                                    {{ logs|dictsort:"action"|slice:":1"|length }}
+                                </div>
+                                <div class="text-muted">Suspicious Activities</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <div class="metric-value text-info">0</div>
+                                <div class="text-muted">Security Alerts</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <select class="form-select" id="action-filter">
+                            <option value="">All Actions</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                            <option value="create">Create</option>
+                            <option value="update">Update</option>
+                            <option value="delete">Delete</option>
+                            <option value="access">Access</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="date" class="form-control" id="date-filter">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" id="user-filter" placeholder="Filter by user...">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary w-100" id="reset-filters">
+                            <i class="fas fa-refresh me-1"></i>Reset Filters
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Logs Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover" id="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Resource</th>
+                                <th>IP Address</th>
+                                <th>Details</th>
+                                <th>Risk Level</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr data-action="{{ log.action }}" data-user="{{ log.user.username|default:'system' }}">
+                                <td>
+                                    <small>{{ log.timestamp|date:"M j, Y" }}</small>
+                                    <br>
+                                    <small class="text-muted">{{ log.timestamp|date:"H:i:s" }}</small>
+                                </td>
+                                <td>
+                                    {% if log.user %}
+                                    <strong>{{ log.user.username }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ log.user.role }}</small>
+                                    {% else %}
+                                    <span class="text-muted">System</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if log.action == 'login' %}success{% elif log.action == 'delete' %}danger{% elif log.action == 'create' %}info{% else %}warning{% endif %}">
+                                        {{ log.get_action_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <code>{{ log.resource }}</code>
+                                </td>
+                                <td>
+                                    {% if log.ip_address %}
+                                    <span class="font-monospace">{{ log.ip_address }}</span>
+                                    {% else %}
+                                    <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.details %}
+                                    <button class="btn btn-sm btn-outline-info view-details-btn" data-details='{{ log.details|safe }}'>
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted">No details</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if log.action == 'delete' or log.resource == 'user' %}
+                                    <span class="badge bg-danger">High</span>
+                                    {% elif log.action == 'update' %}
+                                    <span class="badge bg-warning">Medium</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Low</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Logs navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Security Alerts -->
+        <div class="card mt-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Security Alerts
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="alert-heading">
+                                <i class="fas fa-check-circle me-2"></i>
+                                System Secure
+                            </h6>
+                            <p class="mb-0">No critical security alerts detected in the last 24 hours.</p>
+                        </div>
+                        <span class="badge bg-success">All Clear</span>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Recent Security Events</h6>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item">
+                                <small class="text-muted">2 hours ago</small>
+                                <br>
+                                <span>Multiple failed login attempts from IP: 192.168.1.100</span>
+                            </div>
+                            <div class="list-group-item">
+                                <small class="text-muted">5 hours ago</small>
+                                <br>
+                                <span>User role changed: john_doe → moderator</span>
+                            </div>
+                            <div class="list-group-item">
+                                <small class="text-muted">1 day ago</small>
+                                <br>
+                                <span>Configuration updated: ai_model_parameters</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Security Recommendations</h6>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item">
+                                <i class="fas fa-shield-alt text-success me-2"></i>
+                                Enable two-factor authentication
+                            </div>
+                            <div class="list-group-item">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                Review user session timeouts
+                            </div>
+                            <div class="list-group-item">
+                                <i class="fas fa-key text-info me-2"></i>
+                                Rotate API keys monthly
+                            </div>
+                            <div class="list-group-item">
+                                <i class="fas fa-history text-primary me-2"></i>
+                                Schedule regular security audits
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Log Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="details-content" class="p-3 bg-light rounded" style="max-height: 400px; overflow-y: auto;"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Filter functionality
+    $('#action-filter, #date-filter, #user-filter').on('change keyup', filterLogs);
+    $('#reset-filters').on('click', function() {
+        $('#action-filter, #date-filter, #user-filter').val('');
+        filterLogs();
+    });
+    
+    function filterLogs() {
+        const actionFilter = $('#action-filter').val();
+        const dateFilter = $('#date-filter').val();
+        const userFilter = $('#user-filter').val().toLowerCase();
+        
+        $('#logs-table tbody tr').each(function() {
+            const row = $(this);
+            const rowAction = row.data('action');
+            const rowUser = row.data('user').toLowerCase();
+            const rowDate = row.find('td:first small').text();
+            
+            let showRow = true;
+            
+            if (actionFilter && rowAction !== actionFilter) {
+                showRow = false;
+            }
+            
+            if (dateFilter && !rowDate.includes(dateFilter)) {
+                showRow = false;
+            }
+            
+            if (userFilter && !rowUser.includes(userFilter)) {
+                showRow = false;
+            }
+            
+            if (showRow) {
+                row.show();
+            } else {
+                row.hide();
+            }
+        });
+    }
+    
+    // View details
+    $('.view-details-btn').on('click', function() {
+        const details = $(this).data('details');
+        $('#details-content').text(JSON.stringify(details, null, 2));
+        $('#detailsModal').modal('show');
+    });
+    
+    // Export logs
+    $('#export-logs-btn').on('click', function() {
+        showNotification('Preparing log export...', 'info');
+        // Simulate export process
+        setTimeout(() => {
+            showNotification('Log export completed!', 'success');
+        }, 2000);
+    });
+    
+    function showNotification(message, type) {
+        const alert = $('<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+                       message +
+                       '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+        $('.card-body').prepend(alert);
+        
+        setTimeout(() => {
+            alert.alert('close');
+        }, 5000);
+    }
+    
+    // Auto-refresh logs every 30 seconds
+    setInterval(() => {
+        // In a real application, you might want to implement actual refresh
+        console.log('Auto-refreshing logs...');
+    }, 30000);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">System Analytics & Reports</h4>
+            </div>
+            <div class="card-body">
+                <!-- Key Metrics -->
+                <div class="row mb-5">
+                    <div class="col-md-3">
+                        <div class="card text-white bg-primary">
+                            <div class="card-body text-center">
+                                <div class="metric-value">1,247</div>
+                                <div>Total Users</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-success">
+                            <div class="card-body text-center">
+                                <div class="metric-value">89.2%</div>
+                                <div>User Satisfaction</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-warning">
+                            <div class="card-body text-center">
+                                <div class="metric-value">23.4K</div>
+                                <div>Monthly Interactions</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-white bg-info">
+                            <div class="card-body text-center">
+                                <div class="metric-value">94.7%</div>
+                                <div>System Uptime</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">User Registration Trend</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="userRegistrationsChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Interaction Volume</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="interactionsChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feedback Analytics -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Feedback Ratings Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="feedbackRatingsChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">Feedback Types</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="feedbackTypesChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Reports -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">Detailed Analytics</h5>
+                                <div>
+                                    <button class="btn btn-outline-primary btn-sm me-2">
+                                        <i class="fas fa-download me-1"></i>Export CSV
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-sync me-1"></i>Refresh Data
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <ul class="nav nav-tabs" id="analyticsTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user" type="button">
+                                            User Analytics
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button">
+                                            System Performance
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai" type="button">
+                                            AI Performance
+                                        </button>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content p-3 border border-top-0 rounded-bottom">
+                                    <!-- User Analytics Tab -->
+                                    <div class="tab-pane fade show active" id="user" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>User Engagement Metrics</h6>
+                                                <div class="list-group list-group-flush">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Average Session Duration
+                                                        <span class="badge bg-primary">12.4 min</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Daily Active Users
+                                                        <span class="badge bg-success">847</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Monthly Retention Rate
+                                                        <span class="badge bg-info">78.3%</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Feature Adoption Rate
+                                                        <span class="badge bg-warning">65.1%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>User Demographics</h6>
+                                                <div class="list-group list-group-flush">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        New Users (30 days)
+                                                        <span class="badge bg-primary">234</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Returning Users
+                                                        <span class="badge bg-success">1,013</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Most Active Time
+                                                        <span class="badge bg-info">14:00-16:00</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Avg Trust Score
+                                                        <span class="badge bg-warning">0.76</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- System Performance Tab -->
+                                    <div class="tab-pane fade" id="system" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Performance Metrics</h6>
+                                                <div class="list-group list-group-flush">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        API Response Time
+                                                        <span class="badge bg-success">142ms</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Database Queries/sec
+                                                        <span class="badge bg-primary">124</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Error Rate
+                                                        <span class="badge bg-danger">0.23%</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Server Load
+                                                        <span class="badge bg-warning">64%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Resource Usage</h6>
+                                                <div class="list-group list-group-flush">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        CPU Usage
+                                                        <span class="badge bg-success">42%</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Memory Usage
+                                                        <span class="badge bg-warning">78%</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Disk I/O
+                                                        <span class="badge bg-info">125 MB/s</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Network Traffic
+                                                        <span class="badge bg-primary">2.4 Gb/s</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- AI Performance Tab -->
+                                    <div class="tab-pane fade" id="ai" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Model Performance</h6>
+                                                <div class="list-group list-group-flush">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Recommendation Accuracy
+                                                        <span class="badge bg-success">87.3%</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Trust Prediction Accuracy
+                                                        <span class="badge bg-primary">82.1%</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Emotional Analysis Accuracy
+                                                        <span class="badge bg-warning">74.6%</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Response Relevance
+                                                        <span class="badge bg-info">89.7%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Training Metrics</h6>
+                                                <div class="list-group list-group-flush">
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Last Model Update
+                                                        <span class="badge bg-primary">3 days ago</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Training Data Size
+                                                        <span class="badge bg-success">2.3M samples</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Model Convergence
+                                                        <span class="badge bg-info">98.2%</span>
+                                                    </div>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        Feature Importance
+                                                        <span class="badge bg-warning">Updated</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // User Registrations Chart
+    const userRegCtx = document.getElementById('userRegistrationsChart').getContext('2d');
+    const userRegChart = new Chart(userRegCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'New Users',
+                data: [65, 89, 120, 156, 198, 234],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        }
+    });
+    
+    // Interactions Chart
+    const interactionsCtx = document.getElementById('interactionsChart').getContext('2d');
+    const interactionsChart = new Chart(interactionsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Daily Interactions',
+                data: [3200, 4500, 5200, 4800, 4100, 2800, 1900],
+                backgroundColor: 'rgba(75, 192, 192, 0.8)'
+            }]
+        }
+    });
+    
+    // Feedback Ratings Chart
+    const feedbackRatingsCtx = document.getElementById('feedbackRatingsChart').getContext('2d');
+    const feedbackRatingsChart = new Chart(feedbackRatingsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+            datasets: [{
+                label: 'Rating Distribution',
+                data: [23, 45, 123, 456, 892],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(54, 162, 235, 0.8)'
+                ]
+            }]
+        }
+    });
+    
+    // Feedback Types Chart
+    const feedbackTypesCtx = document.getElementById('feedbackTypesChart').getContext('2d');
+    const feedbackTypesChart = new Chart(feedbackTypesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Agreement', 'Correction', 'Suggestion', 'Emotional', 'Rational'],
+            datasets: [{
+                data: [45, 23, 18, 8, 6],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(255, 159, 64, 0.8)',
+                    'rgba(153, 102, 255, 0.8)'
+                ]
+            }]
+        }
+    });
+});
+</script>
+{% endblock %}
