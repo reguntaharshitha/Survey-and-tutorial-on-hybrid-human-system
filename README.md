@@ -139,7 +139,7 @@ Hybrid-Human-AI/
 
 ## 👨‍💻 Author
 
-**Nikhil Vemula**
+**Harshitha Regunta**
 
 B.Tech – Artificial Intelligence & Machine Learning
 
