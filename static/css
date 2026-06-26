@@ -1,0 +1,96 @@
+/* Additional Custom Styles */
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+.trust-indicator {
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71);
+}
+
+.star-rating {
+    color: #ffc107;
+}
+
+.range-slider .form-range {
+    height: 8px;
+}
+
+.range-slider .d-flex small {
+    font-size: 0.7rem;
+    color: #6c757d;
+}
+
+/* Card hover effects */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+/* Badge styles */
+.badge {
+    font-size: 0.75em;
+}
+
+/* Progress bar animations */
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Table styles */
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* Modal enhancements */
+.modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Button enhancements */
+.btn {
+    border-radius: 25px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Navigation enhancements */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+/* Alert enhancements */
+.alert {
+    border: none;
+    border-radius: 10px;
+}
+
+/* Form enhancements */
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease-in-out;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
